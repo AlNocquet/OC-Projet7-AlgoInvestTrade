@@ -1,7 +1,7 @@
 
 import csv
 from itertools import combinations
-from operator import itemgetter
+from colorama import Fore, Style
 
 
 # PSEUDO CODE BRUTEFORCE
@@ -10,20 +10,19 @@ from operator import itemgetter
 
     # VARIABLE EXTRAIRE 20 ACTIONS DANS CSV
     # VARIABLE CALCULER TOUTES LES COMBINAISONS POSSIBLES
-    # VARIABLE COUT TOTAL et PROFIT DE CHAQUE COMBINAISON (CONDITION < 500 €)
-    # VARIABLE TRI DECROISSANT DES MEILLEURES PERFORMANCES
+    # VARIABLE COUT TOTAL et PROFIT DE CHAQUE COMBINAISON
+    # VARIABLE MEILLEURE PERFORMANCE (CONDITION < 500 €)
 
 # FIN
 
 
-
-def set_stocks_from_csv() -> list:
-    """Sets a list of stocks from the csv file "20_stocks.csv" """
+def get_stocks_from_csv(file) -> list:
+    """Gets a list of stocks from the csv file "20_stocks.csv" """
 
     # DEBUT
 
     stocks = []
-    with open("datas/20_stocks.csv", newline="") as csv_File:
+    with open(file, newline="") as csv_File:
         reader = csv.DictReader(csv_File, delimiter=",")
     # Sélectionner le fichier CSV et le parcourir
         for row in reader:
@@ -41,15 +40,15 @@ def set_stocks_from_csv() -> list:
 
 
 def get_all_combinations(stocks : list) -> list :
-    """ Returns all combinations possibles of stocks (20 puissance 20)"""
+    """ Returns all combinations possibles of stocks """
 
     # DEBUT
 
     all_combinations = []
     # Créer une liste de toutes les combinaisons possibles d'actions
-    for i in range(len(stocks)) :
-        all_combi = combinations(stocks, i) #puissance 20
-    # Pour chaque action de la liste "stocks" de 1 à 20, la combiner avec les autres (puissance 20 - (valeur non combinée avec elle-même + doublon géré par "combination"))
+    for i in range(1, len(stocks) +1) :
+        all_combi = combinations(stocks, i)
+    # Pour chaque action de la liste "stocks" de 1 à 20, rechercher toutes les combinaisons uniques possibles (exclure doublon + valeur multiplié par elle-même)
         for combination in all_combi :
             all_combinations.append(combination)
         # Pour chaque combinaison, l'ajouter à la liste all_combinations 
@@ -60,14 +59,14 @@ def get_all_combinations(stocks : list) -> list :
     # FIN
 
 
-def valid_investments(all_combinations : list) -> list:
-    """ Gets a list of investment proposals with a basket cost < or = €500 """
+def get_best_investment(all_combinations : list) -> list:
+    """ Returns the best investment with a basket cost <= €500 """
 
     # DEBUT
 
-    valid_proposals = []
+    valid_investments = []
 
-    max_investment = 500
+    max_cost = 500
 
     for combination in all_combinations:
         combination_cost = 0
@@ -75,30 +74,36 @@ def valid_investments(all_combinations : list) -> list:
         for i in range (len(combination)) :
             combination_cost += combination[i][1]
             combination_profit += combination[i][2]
-    # POUR chaque combinaison d'actions de la liste des combinaisons possibles, initialiser à 0 le coût et le profit
-        # PUIS additioner le coût et le profit des actions de chaque combinaison avec leurs index ["price"], ["profit"]
+    # POUR chaque combinaison d'actions de la liste des combinaisons possibles, initialiser à 0 le coût et le profit 
+        # PUIS additioner le coût et le profit des actions de chaque combinaison avec les index 
 
-        if combination_cost <= max_investment :
+        if combination_cost <= max_cost :
         # SI le coût de la combinaison d'actions est inférieur ou égale à 500€
-            valid_proposals.append((combination, combination_cost, combination_profit))
-            #print(len(valid_proposals))
-            #print(valid_proposals)
+            valid_investments.append((combination, combination_cost, combination_profit))
+            #print(len(valid_investments))
+    #print(valid_investments[0:5])
+    #print(combination_cost)
             # Ajouter la combinaison à la liste des propositions
 
+    sorted_investments = sorted(valid_investments, reverse=True, key=lambda valid_investment : valid_investment[2])
+    best_investment = sorted_investments[0]
+    print(Fore.GREEN + Style.BRIGHT + f"Le meilleur éventail d'investissements est : " + Style.RESET_ALL)
+    for b in best_investment[0] :
+        print(" "+ f"{b}")
+    print(Fore.GREEN + Style.BRIGHT + f"Avec un coût total de : " + Style.RESET_ALL + f"{round(best_investment[1],2)}")
+    print(Fore.GREEN + Style.BRIGHT + f"Avec un profit total de : " + Style.RESET_ALL + f"{round(best_investment[2],2)}")
+    
+    return best_investment  
 
-def best_investments(valid_proposals : list) -> list:
-    """ Returns a ranking of the best proposals of investment """
+    # Trier la liste des proposition valides par ordre décroissant 
+    # Printer 1er élément de la liste et ses valeurs
 
-    best_investments = valid_proposals
+    # FIN
 
-    sorted_best_investments = sorted(best_investments, reverse=False, key=itemgetter(['price']))
-    print(sorted_best_investments)
-    return sorted_best_investments
-
-    # Trier la liste en décroissant
-    # Print la liste avec : Noms actions, coût total et rendement total. A FAIRE
-
+def main():
+    stocks = get_stocks_from_csv(file="datas/20_stocks.csv")
+    combinations = get_all_combinations(stocks)
+    get_best_investment(combinations)
 
 if __name__ == '__main__':
-    start = best_investments(valid_investments(get_all_combinations(set_stocks_from_csv())))
-
+    start = main()
