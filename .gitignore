@@ -3,5 +3,7 @@ __init__.py
 # Ignorer VENV
 venv/
 .venv/
+# Ignorer Bruteforce
+bruteforce.py
 
 
