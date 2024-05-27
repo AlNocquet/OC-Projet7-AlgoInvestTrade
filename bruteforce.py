@@ -74,7 +74,7 @@ def get_best_investment(all_combinations : list) -> list:
         for i in range (len(combination)) :
             combination_cost += combination[i][1]
             combination_profit += combination[i][2]
-    # POUR chaque combinaison d'actions de la liste des combinaisons possibles, initialiser à 0 le coût et le profit 
+    # POUR chaque combinaison d'actions de la liste des combinaisons possibles, initialiser le coût et le profit à 0 
         # PUIS additioner le coût et le profit des actions de chaque combinaison avec les index 
 
         if combination_cost <= max_cost :
