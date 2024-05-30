@@ -26,41 +26,38 @@ $ pip install -r requirements.txt
 
 ## UTILISATION :
 
-    Activez l'environnement ;
+Activez l'environnement ;
 
 
-    Lancez les commandes suivantes :
+Lancez les commandes suivantes :
 
 
-        Pour lancer le fichier bruteforce.py :
+    Pour lancer le fichier bruteforce.py :
 
-            $ python bruteforce.py
+        $ python bruteforce.py
 
+Le fichier bruteforce.py traite un fichier csv de 20 actions : 
 
-            Le fichier bruteforce.py traite un fichier csv de 20 actions : 
-
-                > Le programme calcule l'ensemble des combinaisons possibles avec les conditions suivantes : 
-                    - Achat unique d'une action ;
-                    - Toutes les combinaisons uniques possibles (A,B exclut combinaison B,A).
+- Le programme calcule l'ensemble des combinaisons possibles avec les conditions suivantes : 
+    - Achat unique d'une action ;
+    - Toutes les combinaisons uniques possibles (A,B exclut combinaison B,A).
             
-                > Affiche une nouvelle liste d'actions par meilleures rentabilités en ne dépassant pas un investissement total de 500 €.
+- Affiche une nouvelle liste d'actions par meilleures rentabilités en ne dépassant pas un investissement total de 500 €.
+
+---
+
+    Pour lancer le fichier optimized.py :
+
+        $ python optimized.py file "Nom du ficher à analyser (avec chemin éventuel). ex : data\\dataset1.csv"
 
 
+Le fichier optimized.py traite un fichier csv indiqué dans le terminal (ici 2 fichiers fournis de 1000 actions): 
 
-        Pour lancer le fichier optimized.py :
-
-            $ python optimized.py file "Nom du ficher à analyser (avec chemin éventuel). ex : data\\dataset1.csv"
-
-
-            Le fichier optimized.py traite un fichier csv indiqué dans le terminal (ici 2 fichiers fournis de 1000 actions): 
-
-                > Le programme nettoie la base de données des données non pertinentes (Coût investissement avec valeur négative ou égale à 0€)
+- Le programme nettoie la base de données des données non pertinentes (Coût investissement avec valeur négative ou égale à 0€)
                 
-                > Trie les actions par performance ;
-                
-                > Achète ces actions jusqu'à un investissement total au plus proche ou égal à 500 € ;
+- Trie les actions par performance et achète ces actions jusqu'à un investissement total au plus proche ou égal à 500 € ;
             
-                > Affiche les données suivantes :
-                    - Investissement de départ (coût total) en Euros ;
-                    - Profit total du panier d'actions après 2 ans en Euros ;
-                    - Valeur de rachat du panier d'actions après 2 ans en Euros.
+- Affiche les données suivantes :
+    - Investissement de départ (coût total) en Euros ;
+    - Profit total du panier d'actions après 2 ans en Euros ;
+    - Valeur de rachat du panier d'actions après 2 ans en Euros.
