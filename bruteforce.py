@@ -48,7 +48,7 @@ def get_all_combinations(stocks : list) -> list :
     # Créer une liste de toutes les combinaisons possibles d'actions
     for i in range(1, len(stocks) +1) :
         all_combi = combinations(stocks, i)
-    # Pour chaque action de la liste "stocks" de 1 à 20, rechercher toutes les combinaisons uniques possibles (exclure doublon + valeur multiplié par elle-même)
+    # Pour chaque action de la liste "stocks" de 1 à 20, Achat unique d'une action + rechercher toutes les combinaisons uniques possibles (A,B exclut combinaison B,A)
         for combination in all_combi :
             all_combinations.append(combination)
         # Pour chaque combinaison, l'ajouter à la liste all_combinations 

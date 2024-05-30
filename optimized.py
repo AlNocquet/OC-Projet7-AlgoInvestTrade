@@ -4,8 +4,6 @@ import argparse
 from colorama import Fore, Style, Back
 
 
-MAX_COST = 500
-
 def get_stocks_from_csv(file) -> list:
     """ Gets a list of stocks from the csv file and excludes irrelevant datas (profits <= 0)"""
 
@@ -17,8 +15,6 @@ def get_stocks_from_csv(file) -> list:
             stock = (row['name'], float(row['price']), float(row['profit']))
             if stock[1] > 0 :
                 stocks.append(stock)
-    #print(len(stocks))
-    #print(stocks[:5])
     return stocks
 
 
@@ -27,32 +23,57 @@ def get_best_investment(stocks: list) -> list:
 
     best_investment = []
 
-    total_purchase = 0
+    max_invest = 500
 
     stocks_by_profit = sorted(stocks, reverse=True, key=lambda stocks : stocks[2])
-    print(stocks_by_profit[:5])
 
-    while total_purchase < MAX_COST:
-        for stock in stocks_by_profit:
-            total_cost = 0
-            total_profit = 0
-            for i in range (len(stock)) :
-                total_cost += stock[i][1]
-                total_profit += stock[i][2]
-                best_investment.append(stock, total_cost, total_profit)
+    for stock in stocks_by_profit:
+        cost_stock = stock[1]
+        if cost_stock <= max_invest:
+            max_invest -= cost_stock
+            # if max = 0 :
+            # break
+            best_investment.append(stock)
 
-    print(Fore.GREEN + Style.BRIGHT + f"Le meilleur éventail d'investissements est : " + Style.RESET_ALL)
-    for b in best_investment[0] :
-        print(" "+ f"{b}")
-    print(Fore.GREEN + Style.BRIGHT + f"Avec un coût total de : " + Style.RESET_ALL + f"{round(best_investment[1],2)}")
-    print(Fore.GREEN + Style.BRIGHT + f"Avec un profit total de : " + Style.RESET_ALL + f"{round(best_investment[2],2)}")
+    return best_investment
 
-    return(best_investment)
+def display_best_performance(best_investment): 
+    """ Displays results """
+    
+    total_cost = 0
+    total_profit = 0
+    total_value = 0
+
+    print(Fore.GREEN + Style.BRIGHT +"\n"+ f"Le meilleur éventail d'investissements pour 500€ d'achat est : " + "\n" + Style.RESET_ALL)
+
+    for b_i in best_investment :
+        print(" "+ f"{b_i}")
+        total_cost += b_i[1]
+        cost_stock = b_i[1]
+        perf_stock = b_i[2] /100
+        profit_stock = cost_stock * perf_stock
+        total_profit += profit_stock
+        new_value = cost_stock + profit_stock
+        total_value += new_value
+
+    print(Fore.GREEN + Style.BRIGHT + "\n" + f"Avec un investissement de départ (coût total) de : " + Style.RESET_ALL + f"{round(total_cost,2)}€")
+
+    print(Fore.GREEN + Style.BRIGHT + f"Un profit NET total après 2 ans de : " + Style.RESET_ALL + f"{round(total_profit,2)}€")
+
+    print(Fore.GREEN + Style.BRIGHT + f"Avec valeur de rachat après 2 ans de : " + Style.RESET_ALL + f"{round(total_value,2)}€")
 
 
 def main():
-    stocks = get_stocks_from_csv(file="datas/dataset1_Python+P7.csv")
-    get_best_investment(stocks)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("file", help="Nom du ficher à analyser (avec chemin éventuel). ex : data\\dataset1.csv")
+    args = parser.parse_args()
+    file_name = args.file
+    print(file_name)
+    
+    stocks = get_stocks_from_csv(file_name)
+    best_investment = get_best_investment(stocks)
+    display_best_performance(best_investment)
 
 
 if __name__ == '__main__':
