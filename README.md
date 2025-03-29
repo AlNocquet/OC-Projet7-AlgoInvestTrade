@@ -31,7 +31,7 @@ $ pip install -r requirements.txt
 Activate the virtual environment, then run the desired command below:
 
 
-### ▶️ To run `bruteforce.py`:
+### To run `bruteforce.py`:
 
 ```bash
 $ python bruteforce.py
@@ -46,7 +46,7 @@ This script processes a CSV file containing 20 stock offers:
 - It displays the most profitable combination of actions that **does not exceed €500 total investment**
 
 
-### 🚀 To run `optimized.py`:
+### To run `optimized.py`:
 
 ```bash
 $ python optimized.py file "Path to the CSV file to analyze (e.g. data\\dataset1.csv)"
