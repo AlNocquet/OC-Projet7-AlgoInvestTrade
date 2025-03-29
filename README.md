@@ -1,63 +1,62 @@
+# AlgoINVEST-TRADE
 
-# AlgoINVEST-TRADE :
+This program displays the most profitable basket of investments from a given list of stocks.
 
-Ce programme permet d'afficher le meilleur panier d'investissements parmi une liste d'actions donnée.
 
-## Technologie :
+## Technology
 
 Python
 
-## Author :
+
+## Author
 
 Alice Nocquet
 
 
-## Installation de l'environnement et lancement du programme :
+## Environment setup and program launch
 
-Utiliser les commandes suivantes pour créer un environnement, installer les requirements et lancer le programme :
+Use the following commands to create a virtual environment, install dependencies, and run the program:
 
 ```bash
 $ git clone https://github.com/AlNocquet/OC-Projet7-AlgoInvestTrade.git
 $ cd OC-Projet7-AlgoInvestTrade
-$ python3 -m venv venv (Sous Windows => python -m venv venv)
-$ source venv/bin/activate (Sous Windows => venv\Scripts\activate)
+$ python3 -m venv venv           # On Windows: python -m venv venv
+$ source venv/bin/activate       # On Windows: venv\Scripts\activate
 $ pip install -r requirements.txt
 ```
 
-## UTILISATION :
 
-Activez l'environnement ;
+## USAGE
 
-
-Lancez les commandes suivantes :
+Activate the virtual environment, then run the desired command below:
 
 
-    Pour lancer le fichier bruteforce.py :
+### ▶️ To run `bruteforce.py`:
 
-        $ python bruteforce.py
+```bash
+$ python bruteforce.py
+```
 
-Le fichier bruteforce.py traite un fichier csv de 20 actions : 
+This script processes a CSV file containing 20 stock offers:
 
-- Le programme calcule l'ensemble des combinaisons possibles avec les conditions suivantes : 
-    - Achat unique d'une action ;
-    - Toutes les combinaisons uniques possibles (A,B exclut combinaison B,A).
-            
-- Affiche une nouvelle liste d'actions par meilleures rentabilités en ne dépassant pas un investissement total de 500 €.
+- It calculates all possible combinations under the following conditions:
+  - A stock can only be purchased once
+  - All unique combinations (A,B ≠ B,A)
 
----
-
-    Pour lancer le fichier optimized.py :
-
-        $ python optimized.py file "Nom du ficher à analyser (avec chemin éventuel). ex : data\\dataset1.csv"
+- It displays the most profitable combination of actions that **does not exceed €500 total investment**
 
 
-Le fichier optimized.py traite un fichier csv indiqué dans le terminal (ici 2 fichiers fournis de 1000 actions): 
+### 🚀 To run `optimized.py`:
 
-- Le programme nettoie la base de données des données non pertinentes (Coût investissement avec valeur négative ou égale à 0€)
-                
-- Trie les actions par performance et achète ces actions jusqu'à un investissement total au plus proche ou égal à 500 € ;
-            
-- Affiche les données suivantes :
-    - Investissement de départ (coût total) en Euros ;
-    - Profit total du panier d'actions après 2 ans en Euros ;
-    - Valeur de rachat du panier d'actions après 2 ans en Euros.
+```bash
+$ python optimized.py file "Path to the CSV file to analyze (e.g. data\\dataset1.csv)"
+```
+
+This script processes a user-specified CSV file (e.g., 1000 stock offers):
+
+- Cleans out invalid data (investment cost ≤ 0€)
+- Sorts actions by performance and selects them until reaching a total investment **as close as possible to €500**
+- Displays the following output:
+  - Total initial investment (in €)
+  - Total profit after 2 years (in €)
+  - Resale value of the basket after 2 years (in €)
