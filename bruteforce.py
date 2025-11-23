@@ -1,43 +1,94 @@
-
 import csv
-from itertools import combinations
-from colorama import Fore, Style
-
-
-# PSEUDO CODE BRUTEFORCE
-
-# DEBUT 
-
-    # VARIABLE EXTRAIRE 20 ACTIONS DANS CSV
-    # VARIABLE CALCULER TOUTES LES COMBINAISONS POSSIBLES
-    # VARIABLE COUT TOTAL et PROFIT DE CHAQUE COMBINAISON
-    # VARIABLE MEILLEURE PERFORMANCE (CONDITION < 500 €)
-
-# FIN
 
 
 def get_stocks_from_csv(file) -> list:
-    """Gets a list of stocks from the csv file "20_stocks.csv" """
+    """
+    Read a CSV and return a list of actions as tuples:
+        (name: str, price: float, profit_amount: float)
 
-    # DEBUT
+    Behavior:
+    - Parses price and profit as floats (accepts comma as decimal separator).
+    - Skips malformed lines with a warning.
+    - Skips actions with price <= 0 with a warning.
+    - Raises FileNotFoundError if the file is not found.
+
+    Args:
+        file (str): Path to the CSV file.
+
+    Returns:
+        list: List of tuples (name, price, profit_amount). May be empty.
+    """
+
 
     stocks = []
-    with open(file, newline="") as csv_File:
-        reader = csv.DictReader(csv_File, delimiter=",")
-    # Sélectionner le fichier CSV et le parcourir
-        for row in reader:
-            stock = (str(row['name']), int(row['price']), ((int(row['profit']) * 0.01) * int(row['price'])))
-        # POUR chaque ligne du fichier CSV, définir une action comme suit :
-            # name : "chaîne de caractère" <- row 0 ;
-            # cost : INT (ENTIER) <- row 1 ;
-            # Profit : INT (ENTIER / PERCENT) <- row 2 (Convertir % en Int avec le prix row[1]) ;
-            stocks.append(stock)
-            # Ajouter à la liste d'actions
-    #print(stocks)
+
+    try:
+        with open(file, newline="", encoding="utf-8") as csv_File:
+            reader = csv.DictReader(csv_File, delimiter=",")
+            for lineno, row in enumerate(reader, start=2):
+                # Récupération tolérante du nom (plusieurs variantes possibles)
+                name = row.get('name') or row.get('Name') or row.get('nom') or row.get('title') or row.get('action')
+
+                try:
+                    # gérer les virgules décimales et espaces
+                    price_text = (row.get('price') or '').replace(',', '.').strip()
+                    profit_text = (row.get('profit') or '').replace(',', '.').strip()
+
+                    price = float(price_text)
+                    profit_pct = float(profit_text)
+                except (KeyError, ValueError, TypeError):
+                    print(f"[WARN] ligne {lineno} ignorée (format invalide) : {row}")
+                    continue
+
+                if price <= 0:
+                    print(f"[WARN] action ignorée (prix <= 0) : {name} (prix={price})")
+                    continue
+
+                profit_amount = price * (profit_pct / 100.0)
+                # Même structure tuple (nom, prix, profit) pour compatibilité avec le reste du code
+                stocks.append((str(name), float(price), float(profit_amount)))
+
+    except FileNotFoundError:
+        print(f"[ERROR] fichier introuvable : {file}")
+        raise
+
     return stocks
 
-    # FIN
 
+def main():
+
+    default_csv = r"C:\Users\franc\openclassrooms\projet_7\OC-Projet7-AlgoInvestTrade\datas\20_stocks.csv"
+
+    csv_path = default_csv
+
+    # Appel fonction de parsing
+    try:
+        stocks = get_stocks_from_csv(csv_path)
+    except FileNotFoundError:
+        print(f"[ERROR] fichier introuvable : {csv_path}")
+        return
+    except Exception as e:
+        print(f"[ERROR] exception pendant le parsing : {type(e).__name__} - {e}")
+        return
+
+    # Affichage simple pour vérifier le résultat
+    print(f"\nNombre d'actions parsées : {len(stocks)}\n")
+    for i, s in enumerate(stocks[:10], start=1):
+        # s est un tuple (name, price, profit_amount)
+        print(f"{i:02d}: name={s[0]!r}, price={s[1]:.2f}€, profit={s[2]:.2f}€")
+
+    print("\n--- Fin du test ---\n")
+    return stocks
+
+if __name__ == '__main__':
+    main()
+
+
+
+
+
+
+##################################################################################################################""
 
 def get_all_combinations(stocks : list) -> list :
     """ Returns all combinations possibles of stocks """
@@ -100,10 +151,9 @@ def get_best_investment(all_combinations : list) -> list:
 
     # FIN
 
-def main():
-    stocks = get_stocks_from_csv(file="datas/20_stocks.csv")
-    combinations = get_all_combinations(stocks)
-    get_best_investment(combinations)
+#def main():
+    #stocks = get_stocks_from_csv(file="datas/20_stocks.csv")
+    #combinations = get_all_combinations(stocks)
+    #get_best_investment(combinations)
 
-if __name__ == '__main__':
-    start = main()
+
