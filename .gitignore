@@ -1,9 +1,6 @@
 # Ignorer INIT
 __init__.py
-# Ignorer VENV
-venv/
-.venv/
-# Ignorer Bruteforce
-bruteforce.py
 
-
+# Ignorer cache Python / fichiers compilés
+__pycache__/
+*.py[cod]
