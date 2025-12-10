@@ -1,7 +1,8 @@
 import csv
+from itertools import combinations
 
 
-def get_stocks_from_csv(file) -> list:
+def get_stocks_from_csv(csv_path) -> list:
     """
     Read a CSV and return a list of actions as tuples:
         (name: str, price: float, profit_amount: float)
@@ -13,147 +14,158 @@ def get_stocks_from_csv(file) -> list:
     - Raises FileNotFoundError if the file is not found.
 
     Args:
-        file (str): Path to the CSV file.
+        csv_path (str): Path to the CSV file.
 
     Returns:
         list: List of tuples (name, price, profit_amount). May be empty.
     """
 
-
     stocks = []
 
     try:
-        with open(file, newline="", encoding="utf-8") as csv_File:
-            reader = csv.DictReader(csv_File, delimiter=",")
-            for lineno, row in enumerate(reader, start=2):
-                # Récupération tolérante du nom (plusieurs variantes possibles)
-                name = row.get('name') or row.get('Name') or row.get('nom') or row.get('title') or row.get('action')
+        with open(csv_path, newline="", encoding="utf-8") as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=",")
+            for line_number, row_dict in enumerate(reader, start=2):
+                # tolerant name lookup (several possible header names)
+                name = row_dict.get('name') or row_dict.get('Name') or row_dict.get('nom') \
+                       or row_dict.get('title') or row_dict.get('action')
 
                 try:
-                    # gérer les virgules décimales et espaces
-                    price_text = (row.get('price') or '').replace(',', '.').strip()
-                    profit_text = (row.get('profit') or '').replace(',', '.').strip()
+                    # handle comma decimal and surrounding spaces
+                    price_text = (row_dict.get('price') or '').replace(',', '.').strip()
+                    profit_text = (row_dict.get('profit') or '').replace(',', '.').strip()
 
+                    # row_dict.get('price') or '': retrieve the string for the price column, or '' if it is missing
+                    # .replace(',', '.') : replace a comma with a period to accept decimals written like 12,5
+                    # .strip() : remove extra spaces at the beginning/end
+
+                    # convert to numbers
                     price = float(price_text)
                     profit_pct = float(profit_text)
+
                 except (KeyError, ValueError, TypeError):
-                    print(f"[WARN] ligne {lineno} ignorée (format invalide) : {row}")
+                    print(f"[WARN] line {line_number} ignored (invalid format): {row_dict}")
                     continue
 
                 if price <= 0:
-                    print(f"[WARN] action ignorée (prix <= 0) : {name} (prix={price})")
+                    print(f"[WARN] action ignored (price <= 0): {name} (price={price})")
                     continue
 
                 profit_amount = price * (profit_pct / 100.0)
-                # Même structure tuple (nom, prix, profit) pour compatibilité avec le reste du code
+                # keep tuple structure (name, price, profit) for compatibility
                 stocks.append((str(name), float(price), float(profit_amount)))
 
     except FileNotFoundError:
-        print(f"[ERROR] fichier introuvable : {file}")
+        print(f"[ERROR] file not found: {csv_path}")
         raise
 
     return stocks
 
 
+def iter_combinations(stocks):
+    """
+    Yield all non-empty combinations of items from `stocks`.
+
+    Behavior:
+    - Produces combinations of size 1..len(stocks) in increasing size order.
+    - Yields each combination as a tuple and does not build a full list in memory.
+    - If `stocks` is empty, yields nothing.
+
+    Args:
+        stocks (sequence): Sequence of items (e.g. tuples (name, price, profit)).
+
+    Returns:
+        generator: Yields tuples representing each combination.
+    """
+
+    # count how many stock items are available (used to know the maximum combination size)
+    num_stocks = len(stocks)
+    
+    # loop over desired combination sizes: 1, then 2, ..., up to all items
+    # (this ensures we produce ('A',) ('B',) ('C',) before ('A','B'), etc.)
+    for combo_size in range(1, num_stocks + 1):
+
+        # for the current combo_size, generate each tuple of that length from `stocks`
+        for combo in combinations(stocks, combo_size):
+
+            # yield hands this combination to the caller and pauses until the caller requests the next one
+            yield combo
+
+
+
+def get_best_investment_bruteforce(stocks, max_cost=500.0):
+    """
+    Brute-force simple : parcourt toutes les combinaisons et renvoie :
+      {'stocks': combo_tuple, 'total_cost': float, 'total_profit': float}
+    ou None si aucune combinaison valide.
+    """
+    best = None
+    for combo in iter_combinations(stocks):
+        total_cost = sum(item[1] for item in combo)
+        if total_cost > max_cost:
+            continue
+        total_profit = sum(item[2] for item in combo)
+        if best is None or total_profit > best['total_profit']:
+            best = {'stocks': combo, 'total_cost': total_cost, 'total_profit': total_profit}
+
+    return best
+
+
+def display_best_investment(best):
+    """Affiche le meilleur portefeuille trouvé par l'algorithme brute force."""
+
+    if best is None:
+        print("Aucune combinaison ne respecte la contrainte de budget.")
+        return
+
+    # Récupération des données
+    combo = best['stocks']
+    total_cost = best['total_cost']
+    total_profit = best['total_profit']
+    total_value = total_cost + total_profit
+
+    print("\nMeilleure combinaison d'actions trouvée :\n")
+
+    # Afficher chaque action une par une
+    for stock in combo:
+        name = stock[0]
+        price = stock[1]
+        profit = stock[2]
+        print("- Action :", name, "| coût :", price, "€ | profit :", profit, "€")
+
+    print("\nRécapitulatif :")
+    print("Coût total du portefeuille :", total_cost, "€")
+    print("Profit total après 2 ans   :", total_profit, "€")
+    print("Valeur de revente totale   :", total_value, "€")
+
+
 def main():
 
-    default_csv = r"C:\Users\franc\openclassrooms\projet_7\OC-Projet7-AlgoInvestTrade\datas\20_stocks.csv"
+    csv_path = "datas/20_stocks.csv"
 
-    csv_path = default_csv
-
-    # Appel fonction de parsing
     try:
         stocks = get_stocks_from_csv(csv_path)
+
     except FileNotFoundError:
-        print(f"[ERROR] fichier introuvable : {csv_path}")
+        print("[ERREUR] Fichier introuvable :", csv_path)
         return
+
     except Exception as e:
-        print(f"[ERROR] exception pendant le parsing : {type(e).__name__} - {e}")
+        print("[ERREUR] Problème pendant la lecture du fichier :", e)
         return
 
-    # Affichage simple pour vérifier le résultat
-    print(f"\nNombre d'actions parsées : {len(stocks)}\n")
+    print("\nNombre d'actions lues :", len(stocks))
+
+    print("Voici les premières actions :\n")
+
     for i, s in enumerate(stocks[:10], start=1):
-        # s est un tuple (name, price, profit_amount)
-        print(f"{i:02d}: name={s[0]!r}, price={s[1]:.2f}€, profit={s[2]:.2f}€")
+        name = s[0]
+        price = s[1]
+        profit = s[2]
+        print(i, ":", "name =", name, ", price =", price, "€ , profit =", profit, "€")
 
-    print("\n--- Fin du test ---\n")
-    return stocks
+    best = get_best_investment_bruteforce(stocks, max_cost=500.0)
 
-if __name__ == '__main__':
-    main()
+    display_best_investment(best)
 
-
-
-
-
-
-##################################################################################################################""
-
-def get_all_combinations(stocks : list) -> list :
-    """ Returns all combinations possibles of stocks """
-
-    # DEBUT
-
-    all_combinations = []
-    # Créer une liste de toutes les combinaisons possibles d'actions
-    for i in range(1, len(stocks) +1) :
-        all_combi = combinations(stocks, i)
-    # Pour chaque action de la liste "stocks" de 1 à 20, Achat unique d'une action + rechercher toutes les combinaisons uniques possibles (A,B exclut combinaison B,A)
-        for combination in all_combi :
-            all_combinations.append(combination)
-        # Pour chaque combinaison, l'ajouter à la liste all_combinations 
-    #print(len(all_combinations))
-    #print(all_combinations)
-    return all_combinations
-        
-    # FIN
-
-
-def get_best_investment(all_combinations : list) -> list:
-    """ Returns the best investment with a basket cost <= €500 """
-
-    # DEBUT
-
-    valid_investments = []
-
-    max_cost = 500
-
-    for combination in all_combinations:
-        combination_cost = 0
-        combination_profit = 0
-        for i in range (len(combination)) :
-            combination_cost += combination[i][1]
-            combination_profit += combination[i][2]
-    # POUR chaque combinaison d'actions de la liste des combinaisons possibles, initialiser le coût et le profit à 0 
-        # PUIS additioner le coût et le profit des actions de chaque combinaison avec les index 
-
-        if combination_cost <= max_cost :
-        # SI le coût de la combinaison d'actions est inférieur ou égale à 500€
-            valid_investments.append((combination, combination_cost, combination_profit))
-            #print(len(valid_investments))
-    #print(valid_investments[0:5])
-    #print(combination_cost)
-            # Ajouter la combinaison à la liste des propositions
-
-    sorted_investments = sorted(valid_investments, reverse=True, key=lambda valid_investment : valid_investment[2])
-    best_investment = sorted_investments[0]
-    print(Fore.GREEN + Style.BRIGHT + f"Le meilleur éventail d'investissements est : " + Style.RESET_ALL)
-    for b in best_investment[0] :
-        print(" "+ f"{b}")
-    print(Fore.GREEN + Style.BRIGHT + f"Avec un coût total de : " + Style.RESET_ALL + f"{round(best_investment[1],2)}")
-    print(Fore.GREEN + Style.BRIGHT + f"Avec un profit total de : " + Style.RESET_ALL + f"{round(best_investment[2],2)}")
-    
-    return best_investment  
-
-    # Trier la liste des proposition valides par ordre décroissant 
-    # Printer 1er élément de la liste et ses valeurs
-
-    # FIN
-
-#def main():
-    #stocks = get_stocks_from_csv(file="datas/20_stocks.csv")
-    #combinations = get_all_combinations(stocks)
-    #get_best_investment(combinations)
-
-
+    print("\n--- Fin du programme bruteforce ---\n")
