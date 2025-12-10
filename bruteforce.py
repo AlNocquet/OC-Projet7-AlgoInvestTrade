@@ -64,18 +64,23 @@ def get_stocks_from_csv(csv_path) -> list:
 
 def iter_combinations(stocks):
     """
-    Yield all non-empty combinations of items from `stocks`.
+    Generate all non-empty combinations of the given stock list.
 
     Behavior:
-    - Produces combinations of size 1..len(stocks) in increasing size order.
-    - Yields each combination as a tuple and does not build a full list in memory.
+    - Produces combinations of size 1 up to len(stocks), in increasing size order.
+    - Uses itertools.combinations to avoid duplicates and permutations
+      (i.e. (A, B) is generated once, and (B, A) is never produced).
+    - Yields each combination lazily as a tuple instead of building a full list
+      in memory.
     - If `stocks` is empty, yields nothing.
 
     Args:
-        stocks (sequence): Sequence of items (e.g. tuples (name, price, profit)).
+        stocks (sequence): Sequence of items (for example tuples
+            (name, price, profit_amount)).
 
     Returns:
-        generator: Yields tuples representing each combination.
+        generator: A generator that yields tuples representing each possible
+            non-empty combination of items from `stocks`.
     """
 
     # count how many stock items are available (used to know the maximum combination size)
@@ -92,13 +97,35 @@ def iter_combinations(stocks):
             yield combo
 
 
-
 def get_best_investment_bruteforce(stocks, max_cost=500.0):
     """
-    Brute-force simple : parcourt toutes les combinaisons et renvoie :
-      {'stocks': combo_tuple, 'total_cost': float, 'total_profit': float}
-    ou None si aucune combinaison valide.
+    Evaluate all combinations with a brute-force search and return the best one.
+
+    Behavior:
+    - Iterates over every non-empty combination of `stocks` using iter_combinations().
+    - For each combination, computes:
+        * total_cost  = sum of prices
+        * total_profit = sum of profit_amount values
+    - Discards any combination whose total_cost exceeds `max_cost`.
+    - Keeps track of the combination with the highest total_profit.
+    - Returns a dictionary describing the best portfolio found, or None
+      if no valid combination respects the budget.
+
+    Args:
+        stocks (sequence): Sequence of items (tuples (name, price, profit_amount)).
+        max_cost (float, optional): Maximum total cost allowed for the portfolio.
+            Defaults to 500.0.
+
+    Returns:
+        dict | None: A dictionary of the form:
+            {
+                "stocks": combo_tuple,
+                "total_cost": float,
+                "total_profit": float
+            }
+            or None if no valid combination is found under the budget.
     """
+
     best = None
     for combo in iter_combinations(stocks):
         total_cost = sum(item[1] for item in combo)
@@ -112,13 +139,36 @@ def get_best_investment_bruteforce(stocks, max_cost=500.0):
 
 
 def display_best_investment(best):
-    """Affiche le meilleur portefeuille trouvé par l'algorithme brute force."""
+    """
+    Print a human-readable summary of the best brute-force portfolio.
+
+    Behavior:
+    - If `best` is None, prints a message indicating that no valid
+      combination respects the budget and returns immediately.
+    - Otherwise:
+        * prints each selected stock (name, price, profit_amount),
+        * prints the total cost of the portfolio,
+        * prints the total profit after 2 years,
+        * prints the total resale value (cost + profit).
+
+    Args:
+        best (dict | None): Result returned by get_best_investment_bruteforce().
+            Expected format:
+            {
+                "stocks": tuple_of_stocks,
+                "total_cost": float,
+                "total_profit": float
+            }
+
+    Returns:
+        None
+    """
 
     if best is None:
         print("Aucune combinaison ne respecte la contrainte de budget.")
         return
 
-    # Récupération des données
+    # datas recovery
     combo = best['stocks']
     total_cost = best['total_cost']
     total_profit = best['total_profit']
@@ -126,7 +176,7 @@ def display_best_investment(best):
 
     print("\nMeilleure combinaison d'actions trouvée :\n")
 
-    # Afficher chaque action une par une
+    # Display each action one by one
     for stock in combo:
         name = stock[0]
         price = stock[1]
@@ -140,6 +190,26 @@ def display_best_investment(best):
 
 
 def main():
+    """
+    Entry point for the brute-force script.
+
+    Behavior:
+    - Defines the relative CSV path (datas/20_stocks.csv).
+    - Calls get_stocks_from_csv() to parse the input file and build the
+      list of stocks.
+    - Prints a short summary of the parsed data (number of actions and
+      the first 10 entries for visual inspection).
+    - Runs the brute-force search via get_best_investment_bruteforce()
+      with a maximum budget of 500€.
+    - Calls display_best_investment() to print the optimal portfolio and
+      its aggregated metrics.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
 
     csv_path = "datas/20_stocks.csv"
 
